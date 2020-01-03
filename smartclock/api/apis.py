@@ -1,7 +1,7 @@
 from smartclock import app, db
-from flask import request, jsonify, abort
-from smartclock.models import User, Timesheet, user_schema, users_schema, timesheet_schema, timesheets_schema
-from smartclock.functions import hash_password
+from flask import request, jsonify
+from smartclock.model.models import User, Timesheet, user_schema, users_schema, timesheet_schema, timesheets_schema
+from smartclock.utility.hash_password import hash_password
 from datetime import datetime
 from sqlalchemy import desc
 
@@ -132,17 +132,19 @@ def get_timesheets_by_username(username):
     else:
         return jsonify({'custom_error':'username is invalid'})
 
-# delete a user by id
+
+# delete a user by username
 @app.route('/api/v1/user/<username>', methods=['DELETE'])
 def delete_user(username):
     user_to_be_deleted = User.query.filter_by(username=username).first()
-    ts_of_that_user = Timesheet.query.filter_by(user_id=user_to_be_deleted.id).all()
 
     if not user_to_be_deleted:
         return jsonify({'message': 'user does not exist'})
 
+    ts_of_that_user = Timesheet.query.filter_by(user_id=user_to_be_deleted.id).all()
+
     if len(ts_of_that_user) > 0:
-        db.session.delete(ts_of_that_user)
+        Timesheet.query.filter_by(user_id=user_to_be_deleted.id).delete()
 
     db.session.delete(user_to_be_deleted)
     db.session.commit()

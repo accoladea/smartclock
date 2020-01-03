@@ -1,4 +1,5 @@
-from smartclock import app, database_name
+from smartclock import app
+from .names import database_name
 
 # FLASK
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

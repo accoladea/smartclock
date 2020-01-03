@@ -1,10 +1,10 @@
 from smartclock import app, db
 from flask import render_template, redirect, url_for, flash, request, session, abort
-from smartclock.forms import RegistrationForm, LoginForm, EmailPasswordForm, PasswordResetForm,  SettingsForm, TokenForm
-from smartclock.models import User
-from smartclock.functions import check_password, hash_password
+from smartclock.form import RegistrationForm, LoginForm, EmailPasswordForm, PasswordResetForm,  SettingsForm, TokenForm
+from smartclock.model.models import User
+from smartclock.utility.hash_password import check_password, hash_password
 from flask_login import login_user, logout_user, login_required, current_user
-from smartclock.email import send_email2
+from smartclock.utility.email import send_email2
 from io import BytesIO
 import pyqrcode
 

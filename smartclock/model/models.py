@@ -1,7 +1,6 @@
 from smartclock import app, db, ma, login_manager
 from flask_login import UserMixin
-from smartclock.functions import tableDoesNotExist
-from datetime import datetime
+from smartclock.sqlite_handler import tableDoesNotExist
 from itsdangerous import TimedJSONWebSignatureSerializer \
     as Serializer
 import base64, os, onetimepass
