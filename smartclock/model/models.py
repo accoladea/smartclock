@@ -3,6 +3,7 @@ from flask_login import UserMixin
 from smartclock.sqlite_handler import tableDoesNotExist
 from itsdangerous import TimedJSONWebSignatureSerializer \
     as Serializer
+import base64, os, onetimepass, datetime
 from datetime import timedelta
 
 
