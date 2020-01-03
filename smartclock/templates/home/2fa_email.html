@@ -1,6 +1,6 @@
-{% extends "public/base.html" %}
+{% extends "home/base.html" %}
 {% block more_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='public/css/register.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='public/css/login.css') }}">
 {% endblock %}
 {% block content %}
 <main class="content">
@@ -12,25 +12,24 @@
                   <!-- Background image for card set in CSS! -->
                </div>
                <div class="card-body">
-                  <h5 class="card-title text-center">Password Reset</h5>
+                  <h5 class="card-title text-center">Sign In</h5>
                   <form class="form-signin" method="post">
                      {{ form.hidden_tag() }}
                      <div class="form-label-group">
-                        {{ form.email.label(class="form-control-label") }}
-                        {% if form.email.errors %}
-                        {{ form.email(class="form-control form-control-lg is-invalid") }}
+                        {{ form.token.label(class="form-control-label") }}
+                        {% if form.token.errors %}
+                        {{ form.token(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
-                           {% for error in form.email.errors %}
+                           {% for error in form.token.errors %}
                            <span>{{ error }}</span>
                            {% endfor %}
                         </div>
                         {% else %}
-                        {{ form.email(class="form-control form-control-lg") }}
+                        {{ form.token(class="form-control form-control-lg") }}
                         {% endif %}
                      </div>
-                     <hr>
-                     {{ form.submit(class="btn btn-lg btn-primary btn-block text-uppercase mt-4") }}
-                     <a class="d-block text-center mt-3 mb-3" href="{{ url_for('login') }}">Sign In</a>
+                     {{ form.submit(class="btn btn-lg btn-primary btn-block text-uppercase") }}
+                     <a class="d-block text-center mt-3 mb-3" href="{{ url_for('register') }}">Sign Up</a>
                   </form>
                </div>
             </div>

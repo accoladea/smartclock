@@ -4,18 +4,18 @@ from smartclock.form import RegistrationForm, LoginForm, EmailPasswordForm, Pass
 from smartclock.model.models import User
 from smartclock.utility.hash_password import check_password, hash_password
 from flask_login import login_user, logout_user, login_required, current_user
-from smartclock.utility.email import send_email2
+from smartclock.utility.send_email import send_email2
 from io import BytesIO
 import pyqrcode
 
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('public/home.html')
+    return render_template('home/home.html')
 
 @app.route("/about")
 def about():
-    return render_template('public/about.html')
+    return render_template('home/about.html')
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -35,14 +35,14 @@ def register():
 
         flash("You have successfully created your account, confirm your email and start signing in", "success")
 
-        send_email2(form.email.data, "Confirm your email! & Welcome to SmartClock!", render_template('emailforms/confirm.html', current_user=user, token=user.generate_confirmation_token()))
+        send_email2(form.email.data, "Confirm your email! & Welcome to SmartClock!", render_template('forms/confirm.html', current_user=user, token=user.generate_confirmation_token()))
 
         # return redirect(url_for('home'))
         # redirect to auth page, passing username in session
         session["username"] = user.username
         return redirect(url_for("two_factor_setup"))
 
-    return render_template('public/register.html', form=form, title='Register')
+    return render_template('home/register.html', form=form, title='Register')
 
 @app.route("/twofactor")
 def two_factor_setup():
@@ -54,7 +54,7 @@ def two_factor_setup():
         return redirect(url_for("home"))
     # since this page contains the sensitive qrcode,
     # make sure the browser does not cache it
-    return render_template("public/two-factor-setup.html"), 200, {
+    return render_template("home/two-factor-setup.html"), 200, {
     "Cache-Control": "no-cache, no-store, must-revalidate",
     "Pragma": "no-cache",
     "Expires": "0"}
@@ -91,7 +91,7 @@ def login():
         else:
             flash("Invalid username or password")
             return redirect(url_for("login"))
-    return render_template('public/login.html', form=form, title="login")
+    return render_template('home/login.html', form=form, title="login")
 
 @app.route("/login2fa/<string:username>/<string:remember>", methods=['GET', 'POST'])
 def login2fa(username, remember):
@@ -109,13 +109,13 @@ def login2fa(username, remember):
         else:
             flash("Invalid token")
             return redirect(url_for("login2fa", username=username, remember=remember))
-    return render_template('public/2fa.html', form=form, email=user.email, remember=remember, title='token login')
+    return render_template('home/2fa.html', form=form, email=user.email, remember=remember, title='token login')
 
 @app.route("/tfa_token/<string:email>/<string:remember>")
 def tfa_token(email, remember):
     user = User.query.filter_by(email=email).first()
     t = user.generate_confirmation_token()
-    send_email2(user.email, "Login Token", render_template('emailforms/twofactoremail.html', token=t))
+    send_email2(user.email, "Login Token", render_template('forms/twofactoremail.html', token=t))
     flash("email sent!")
     t = hash_password(t)
     return redirect(url_for('two_factor_email', email=email, remember=remember, t = t))
@@ -132,7 +132,7 @@ def two_factor_email(email, remember, t):
         else:
             flash("invalid token")
             return redirect(url_for('two_factor_email', email=email, remember=remember, t = t))
-    return render_template('public/2fa_email.html', form=form, title='email token login')
+    return render_template('home/2fa_email.html', form=form, title='email token login')
 
 @app.route("/logout")
 @login_required
@@ -145,9 +145,9 @@ def logout():
 @login_required
 def dashboard():
     if current_user.is_admin:
-        return render_template('auth/admin/admin.html', title='Dashboard')
+        return render_template('dash_views/for_admin/dashboard.html', title='Dashboard')
     else:
-        return render_template('auth/dashboard.html', title='Dashboard')
+        return render_template('dash_views/for_user/dashboard.html', title='Dashboard')
 
 @app.route("/dashboard/<string:username>", methods=["GET"])
 @login_required
@@ -156,14 +156,14 @@ def modify(username):
         if username:
             user = User.query.filter_by(username=username).first()
             if user:
-                return render_template('auth/admin/user.html', selected_user=user, title='Manage Users')
+                return render_template('dash_views/for_admin/user.html', selected_user=user, title='Manage Users')
             else:
                 flash('There is no user with that username!','warning')
-                return render_template('auth/admin/admin.html', title='Admin ')
+                return render_template('dash_views/for_admin/dashboard.html', title='Admin ')
         else:
-            return render_template('auth/admin/admin.html', title="Admin ")
+            return render_template('dash_views/for_admin/dashboard.html', title="Admin ")
     else:
-        return render_template('auth/dashboard.html', title='Dashboard')
+        return render_template('dash_views/for_user/dashboard.html', title='Dashboard')
 
 @app.route("/settings", methods=['GET', 'POST'])
 @login_required
@@ -202,12 +202,12 @@ def settings():
         else:
             flash("Current Password incorrect")
         return redirect(url_for("settings"))
-    return render_template('auth/settings.html', title='Settings', form=form)
+    return render_template('dash_views/settings.html', title='Settings', form=form)
 
 @app.route("/view")
 @login_required
 def view():
-    return render_template('auth/view.html', title='View Timesheets')
+    return render_template('dash_views/for_user/view.html', title='View Timesheets')
 
 
 """
@@ -244,7 +244,7 @@ def reset(id, token):
     else:
         flash("Your token is invalid or expired, start over again", "warning")
         return redirect(url_for("home"))
-    return render_template('public/reset.html', form=form, title= "Password Reset")
+    return render_template('home/reset.html', form=form, title= "Password Reset")
 
 # resetmessage asks for a valid email, then it sends a password reset email to the user
 @app.route("/resetmessage", methods=['GET','POST'])
@@ -254,6 +254,6 @@ def resetmessage():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
             flash("If your email exists in our database, it will be sent to your email address for you to confirm!", "info")
-            send_email2(form.email.data, "password reset email", render_template('emailforms/resetmessage.html', current_user=user, token=user.generate_reset_token()))
+            send_email2(form.email.data, "password reset email", render_template('forms/resetmessage.html', current_user=user, token=user.generate_reset_token()))
             return redirect(url_for("home"))
-    return render_template('public/resetbyemail.html', form=form, title="Password Reset")
+    return render_template('home/resetbyemail.html', form=form, title="Password Reset")

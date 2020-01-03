@@ -125,7 +125,7 @@ def get_timesheets_by_username(username):
         if user.is_approved and not user.is_admin:
             timesheets = Timesheet.query.filter_by(user_id=user.id).all()
             if not timesheets:
-                return jsonify({'custom_error': 'timesheets do not exist'})
+                return jsonify([])
             return timesheets_schema.jsonify(timesheets)
         else:
             return jsonify({'custom_error':'user role is invalid'})
