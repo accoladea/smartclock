@@ -4,11 +4,13 @@ from smartclock.model.models import User, Timesheet, user_schema, users_schema, 
 from smartclock.utility.hash_password import hash_password
 from datetime import datetime
 from sqlalchemy import desc
+from .auth import token_auth
 
 
 # REST API Implementation
 # create a timesheet
 @app.route('/api/v1/timesheet', methods=['POST'])
+@token_auth.login_required
 def create_timesheet():
     date = request.json['date']
     todays_date = datetime.utcnow().date()
@@ -25,6 +27,7 @@ def create_timesheet():
 
 # create a user
 @app.route('/api/v1/user', methods=['POST'])
+@token_auth.login_required
 def create_user():
     username = request.json['username']
     password = request.json['password']
@@ -48,6 +51,7 @@ def create_user():
 # with this command update any field of a user except id and password
 # patch method
 @app.route('/api/v1/user/patch/<username>', methods=['PATCH'])
+@token_auth.login_required
 def patch_anything(username):
     user = User.query.filter_by(username=username).first()
     if user:
@@ -77,6 +81,7 @@ def patch_anything(username):
 
 # get all users
 @app.route('/api/v1/users', methods=['GET'])
+@token_auth.login_required
 def get_users_all():
     users = User.query.all()
     result = users_schema.dump(users)
@@ -85,6 +90,7 @@ def get_users_all():
 
 # get a user by its username
 @app.route('/api/v1/users/<username>', methods=['GET'])
+@token_auth.login_required
 def get_user(username):
     user = User.query.filter_by(username=username).first()
     if not user:
@@ -93,6 +99,7 @@ def get_user(username):
 
 # get a user by its id
 @app.route('/api/v1/user/<int:uid>', methods=['GET'])
+@token_auth.login_required
 def get_user_by_id(uid):
     user = User.query.filter_by(id=uid).first()
     if not user:
@@ -103,6 +110,7 @@ def get_user_by_id(uid):
 
 # get all timesheets
 @app.route('/api/v1/timesheets', methods=['GET'])
+@token_auth.login_required
 def get_timesheets_all():
     all_timesheets = Timesheet.query.all()
     result = timesheets_schema.dump(all_timesheets)
@@ -111,6 +119,7 @@ def get_timesheets_all():
 
 # get a timesheet by its id
 @app.route('/api/v1/timesheet/<int:uid>', methods=['GET'])
+@token_auth.login_required
 def get_timesheet_by_id(uid):
     timesheet = Timesheet.query.get_or_404(uid)
     if not timesheet:
@@ -119,6 +128,7 @@ def get_timesheet_by_id(uid):
 
 # get all timesheets for a specific username
 @app.route('/api/v1/timesheets/<string:username>', methods=['GET'])
+@token_auth.login_required
 def get_timesheets_by_username(username):
     user = User.query.filter_by(username=username).one_or_none()
     if user:
@@ -135,6 +145,7 @@ def get_timesheets_by_username(username):
 
 # delete a user by username
 @app.route('/api/v1/user/<username>', methods=['DELETE'])
+@token_auth.login_required
 def delete_user(username):
     user_to_be_deleted = User.query.filter_by(username=username).first()
 
@@ -153,6 +164,7 @@ def delete_user(username):
 
 # delete a timesheet by id
 @app.route('/api/v1/timesheet/<int:id>', methods=['DELETE'])
+@token_auth.login_required
 def delete_timesheet(id):
     ts = Timesheet.query.filter_by(id=id).first()
     if not ts:
@@ -164,6 +176,7 @@ def delete_timesheet(id):
 
 # custom function with patch method for api
 @app.route('/api/v1/clock/<username>', methods=['GET'])
+@token_auth.login_required
 def clock_user(username):
     user = User.query.filter_by(username=username).first()
 
@@ -214,6 +227,7 @@ def clock_user(username):
             return timesheet_schema.jsonify(new_stamp)
 
 @app.route('/api/v1/clock_status/<username>', methods=['GET'])
+@token_auth.login_required
 def get_clock_bool(username):
 
     user = User.query.filter_by(username=username).first()
